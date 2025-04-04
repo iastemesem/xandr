@@ -2,6 +2,9 @@ import AppNexusSDK
 import Foundation
 
 public class MultiAdRequestRegistry {
+    
+    static let shared = MultiAdRequestRegistry()
+    
   private var multiAdRequests: [String: ANMultiAdRequest] = [:]
 
   private func generateRandomStringId() -> String {
@@ -28,8 +31,8 @@ public class MultiAdRequestRegistry {
     return mar?.load() ?? false
   }
 
-//  public func addAdUnit(requestId: String, ad: AdUnits) -> Bool {
-//    let mar = multiAdRequests[requestId]
-//    return mar?.addAdUnit(ad) ?? false
-//  }
+  public func addAdUnit(_ requestId: String, ad: ANAdProtocolFoundationCore) -> Bool {
+    let mar = multiAdRequests[requestId]
+    return mar?.addAdUnit(ad) ?? false
+  }
 }

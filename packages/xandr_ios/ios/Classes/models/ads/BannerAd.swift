@@ -61,7 +61,7 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate {
     let nativeAdRendererId = arguments["nativeAdRendererId"] as? Int
     // let loadWhenCreated = arguments["loadWhenCreated"] as? Bool ?? false
     let enableLazyLoad = arguments["enableLazyLoad"] as? Bool ?? false
-    // let multiAdRequestId = arguments["multiAdRequestId"] as? String
+    let multiAdRequestId = arguments["multiAdRequestId"] as? String
 
     var adSizes: [NSValue] = []
     adSizesArgs?.forEach { size in
@@ -119,8 +119,15 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate {
         banner?.placementId = placementID
       }
 
-      logger.debug(message: "init banner, load ad...")
-      banner?.loadAd()
+        if multiAdRequestId != nil && banner != nil{
+            let result = MultiAdRequestRegistry.shared.addAdUnit(multiAdRequestId!, ad: banner!)
+            logger.debug(message: "add adUnit result: \(result)")
+        } else {
+            logger.debug(message: "init banner, load ad...")
+            banner?.loadAd()
+        }
+        
+      
     }
   }
 

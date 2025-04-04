@@ -12,7 +12,7 @@ public class XandrPlugin: UIViewController, FlutterPlugin,
 
   private var interstitialAd: InterstitialAd?
 
-  private var marRegistry: MultiAdRequestRegistry = .init()
+    private var marRegistry: MultiAdRequestRegistry = MultiAdRequestRegistry.shared
 
   private func parentController() -> UIViewController {
     var topController: UIViewController = UIApplication.shared.keyWindow!.rootViewController!
