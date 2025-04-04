@@ -2,6 +2,7 @@ package de.thekorn.xandr
 
 import android.app.Activity
 import android.view.View
+import de.thekorn.xandr.listeners.XandrBannerAdListener
 import de.thekorn.xandr.models.BannerViewOptions
 import de.thekorn.xandr.models.FlutterState
 import de.thekorn.xandr.models.ads.BannerAd
@@ -12,7 +13,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 class BannerViewContainer(
     activity: Activity,
     private var state: FlutterState,
-    widgetId: Int,
+    private var widgetId: Int,
     private val bannerViewOptions: BannerViewOptions?
 ) : PlatformView {
     val banner: BannerAd
@@ -23,6 +24,7 @@ class BannerViewContainer(
             "Initializing $activity id=$widgetId " +
                 "xandr-initialized=${state.isInitialized} bannerViewOptions=$bannerViewOptions"
         )
+
 
         this.banner = BannerAd(activity, state, widgetId)
 
@@ -51,6 +53,12 @@ class BannerViewContainer(
                 }
             }
         } else {
+            if (banner.adListener == null)
+                banner.adListener = XandrBannerAdListener(
+                    widgetId.toLong(),
+                    state.flutterApi,
+                    banner,
+                )
             Log.d(
                 "Xandr.BannerView",
                 "banner is not loaded because its part of a multi ad request"

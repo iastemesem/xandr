@@ -82,6 +82,7 @@ class XandrPlugin :
         callback: (Result<Boolean>) -> Unit
     ) {
         SDKSettings.enableTestMode(testMode)
+        SDKSettings.enableBackgroundThreading(true)
 
         this.flutterState.memberId = memberId.toInt()
         this.flutterState.publisherId = publisherId?.toInt()
@@ -92,6 +93,7 @@ class XandrPlugin :
             true,
             AdInitListener(this.flutterState)
         )
+
         this.flutterState.isInitialized.invokeOnCompletion {
             callback(Result.success(this.flutterState.isInitialized.getCompleted()))
         }
@@ -228,7 +230,7 @@ class XandrPlugin :
                     override fun onMultiAdRequestFailed(code: ResultCode) {
                         Log.d("Xandr.MultiAdRequest", "failed")
                     }
-                }
+                },
             )
         }
         val id = MultiAdRequestRegistry.initNewRequest(mar)

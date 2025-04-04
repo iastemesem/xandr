@@ -160,7 +160,7 @@ class MultiAdRequestController {
   /// the initialization was successful.
   Future<bool> initWhenXandrIsReady() async {
     if (_controller.isInitialized.isCompleted) {
-      return _controller.isInitialized.future;
+      return init();
     }
     await _controller.isInitialized.future;
     return init();
