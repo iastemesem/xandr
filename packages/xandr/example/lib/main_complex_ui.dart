@@ -62,10 +62,8 @@ class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
   }
 
   Future<bool> _initializeControllers() async {
-    final result = await _controller.init(9517, testMode: true);
-    debugPrint('GIAN-LOG $result');
-    final result2 = await _multiAdRequestController.initWhenXandrIsReady();
-    debugPrint('GIAN-LOG multi-controller: $result2');
+    await _controller.init(9517, testMode: true);
+    await _multiAdRequestController.initWhenXandrIsReady();
     return true;
   }
 
