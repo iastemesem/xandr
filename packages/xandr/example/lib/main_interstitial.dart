@@ -56,7 +56,7 @@ class _XandrExampleState extends State<XandrExample> {
       ),
       body: Center(
         child: XandrBuilder(
-          controller: _controller,
+          memberId: 9517,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               debugPrint('Xandr SDK initialized, success=${snapshot.hasData}');
