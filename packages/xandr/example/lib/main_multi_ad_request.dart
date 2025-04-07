@@ -5,8 +5,9 @@ import 'package:xandr/ad_banner.dart';
 import 'package:xandr/ad_size.dart';
 import 'package:xandr/xandr.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await XandrSDKManager.initialize(9517, testMode: true);
   runApp(const MyApp());
 }
 
@@ -34,7 +35,6 @@ class XandrExample extends StatefulWidget {
 }
 
 class _XandrExampleState extends State<XandrExample> {
-  late final XandrController _controller;
   late final MultiAdRequestController _multiAdRequestController;
   final ScrollController _scrollController = ScrollController();
   final StreamController<ScrollPosition> _checkIfAdIsInViewport =
@@ -52,10 +52,7 @@ class _XandrExampleState extends State<XandrExample> {
   void initState() {
     super.initState();
 
-    _controller = XandrController()..init(9517);
-    _multiAdRequestController =
-        MultiAdRequestController(controller: _controller)
-          ..initWhenXandrIsReady();
+    _multiAdRequestController = MultiAdRequestController()..init();
     _scrollController.addListener(() {
       _checkIfAdIsInViewport.add(_scrollController.position);
     });
@@ -96,15 +93,15 @@ class _XandrExampleState extends State<XandrExample> {
                 ),
               ),
               AdBanner(
-                controller: _controller,
+                controller: _multiAdRequestController,
                 //placementID: '17058950',
                 inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
                 adSizes: const [
                   AdSize(728, 90),
-                ], //[AdSize(300, 250)],
+                ],
+                //[AdSize(300, 250)],
                 customKeywords: useDemoAds,
                 resizeAdToFitContainer: true,
-                multiAdRequestController: _multiAdRequestController,
               ),
               const Text('Lorem Ipsum is simply text of the printing and '
                   'typesetting industry. Ipsum has been the boo '
@@ -123,15 +120,15 @@ class _XandrExampleState extends State<XandrExample> {
                 ),
               ),
               AdBanner(
-                controller: _controller,
+                controller: _multiAdRequestController,
                 //placementID: '17058950',
                 inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
                 adSizes: const [
                   AdSize(728, 90),
-                ], //[AdSize(300, 250)],
+                ],
+                //[AdSize(300, 250)],
                 customKeywords: useDemoAds,
                 resizeAdToFitContainer: true,
-                multiAdRequestController: _multiAdRequestController,
               ),
               const Text('Lorem Ipsum is simp du text of the printing and '
                   'typesetting industry. Lo Ipsum has been the boo '
@@ -150,15 +147,15 @@ class _XandrExampleState extends State<XandrExample> {
                 ),
               ),
               AdBanner(
-                controller: _controller,
+                controller: _multiAdRequestController,
                 //placementID: '17058950',
                 inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
                 adSizes: const [
                   AdSize(728, 90),
-                ], //[AdSize(300, 250)],
+                ],
+                //[AdSize(300, 250)],
                 customKeywords: useDemoAds,
                 resizeAdToFitContainer: true,
-                multiAdRequestController: _multiAdRequestController,
               ),
             ],
           ),

@@ -6,6 +6,31 @@ import 'package:xandr_platform_interface/xandr_platform_interface.dart';
 
 XandrPlatform get _platform => XandrPlatform.instance;
 
+/// A class that manages the XandrAD SDK. It can be used to initialize the SDK,
+/// without loading ads or other stuff.
+class XandrSDKManager {
+  static bool _initialized = false;
+
+  /// A method that initializes the XandrAD SDK.
+  /// [memberId] is the Xandr member ID.
+  /// [publisherId] is the optional Xandr publisher ID.
+  /// set [testMode] to true if in a test environment
+  static Future<bool> initialize(
+    int memberId, {
+    int? publisherId,
+    bool testMode = false,
+  }) async {
+    return _initialized = await _platform.init(
+      memberId,
+      publisherId: publisherId,
+      testMode: testMode,
+    );
+  }
+
+  /// A method that checks if the XandrAD SDK is initialized.
+  static bool get initialized => _initialized;
+}
+
 /// A controller for managing Xandr functionality.
 class XandrController {
   /// Creates a new instance of the XandrController class.
@@ -17,38 +42,8 @@ class XandrController {
     _platform.registerEventStream(controller: _eventStreamController);
   }
 
-  /// A completer that indicates whether the initialization is complete or not.
-  final Completer<bool> isInitialized = Completer();
-
   final StreamController<BannerAdEvent> _eventStreamController =
       StreamController.broadcast();
-
-  /// Initializes the Xandr SDK.
-  ///
-  /// [memberId] is the Xandr member ID.
-  /// [publisherId] is the optional Xandr publisher ID.
-  /// set [testMode] to true if in a test environment
-
-  Future<bool> init(
-    int memberId, {
-    int? publisherId,
-    bool testMode = false,
-  }) async {
-    debugPrint(
-      'init xandr with memberId=$memberId, publisherId=$publisherId, '
-      'testMode=$testMode',
-    );
-    if (isInitialized.isCompleted) {
-      return isInitialized.future;
-    }
-    final result = await _platform.init(
-      memberId,
-      publisherId: publisherId,
-      testMode: testMode,
-    );
-    isInitialized.complete(result);
-    return result;
-  }
 
   /// Resets XandrController instance
   Future<void> resetController() async {
@@ -136,56 +131,39 @@ class XandrController {
 }
 
 /// The controller for handling multi ad requests.
-class MultiAdRequestController {
+class MultiAdRequestController extends XandrController {
   /// Controller for handling multi ad requests.
   ///
   /// This controller is responsible for managing multiple ad requests
   /// and coordinating with the XandrController.
-  MultiAdRequestController({required XandrController controller})
-      : _controller = controller;
+  MultiAdRequestController() : super();
 
   String? _multiAdRequestID;
-  final XandrController _controller;
 
   /// Returns the request ID associated with the multi-ad request.
   /// If no request ID is available, it returns `null`.
   String? get requestId => _multiAdRequestID;
-
-  /// A completer that indicates whether the initialization is complete or not.
-  final Completer<bool> isInitialized = Completer();
-
-  /// Initializes the application when Xandr is ready.
-  ///
-  /// Returns a [Future] that completes with a boolean value indicating whether
-  /// the initialization was successful.
-  Future<bool> initWhenXandrIsReady() async {
-    if (_controller.isInitialized.isCompleted) {
-      return init();
-    }
-    await _controller.isInitialized.future;
-    return init();
-  }
 
   /// Initializes the Xandr library.
   ///
   /// Returns a [Future] that completes with a [bool] value indicating whether
   /// the initialization was successful.
   Future<bool> init() async {
-    if (isInitialized.isCompleted) {
-      return isInitialized.future;
-    }
     _multiAdRequestID = await _platform.initMultiAdRequest();
     final result = _multiAdRequestID != null;
-    isInitialized.complete(result);
     return result;
   }
+
+  /// A method that returns true if the multi ad request ID is initialized.
+  bool get initialized => _multiAdRequestID != null;
 
   /// Disposes the resources used by this object.
   ///
   /// This method should be called when the object is no longer needed to
   /// release any resources it holds.
   Future<void> dispose() async {
-    if (_multiAdRequestID != null) {
+    await super.resetController();
+    if (initialized) {
       await _platform.disposeMultiAdRequest(_multiAdRequestID!);
     }
   }
@@ -195,7 +173,7 @@ class MultiAdRequestController {
   /// Returns a [Future] that completes with a [bool] value indicating whether
   /// the ads were successfully loaded.
   Future<bool> loadAds() async {
-    assert(_multiAdRequestID != null, 'multiAdRequestID must be initialized');
+    assert(initialized, 'multiAdRequestID must be initialized');
     return _platform.loadAdsForMultiAdRequest(_multiAdRequestID!);
   }
 }

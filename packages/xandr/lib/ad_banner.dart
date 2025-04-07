@@ -32,7 +32,6 @@ class AdBanner extends StatefulWidget {
     this.loadsInBackground,
     this.shouldServePSAs,
     this.enableLazyLoad,
-    this.multiAdRequestController,
     LoadMode? loadMode,
     double? width,
     double? height,
@@ -139,9 +138,6 @@ class AdBanner extends StatefulWidget {
 
   /// The load mode for the ad banner, determines when the ad is loaded.
   final LoadMode loadMode;
-
-  /// The controller for managing multi ad requests.
-  final MultiAdRequestController? multiAdRequestController;
 
   /// Callback called when the ad finishes loading
   /// whether it's success or failure
@@ -253,12 +249,13 @@ class _AdBannerState extends State<AdBanner> {
   }
 
   Future<bool> waitIsInitialized() async {
-    final xandrIsInitialized = await widget.controller.isInitialized.future;
-    if (!xandrIsInitialized) return false;
-    if (widget.multiAdRequestController == null) return xandrIsInitialized;
-    final multiAdrequestInitialized =
-        await widget.multiAdRequestController!.isInitialized.future;
-    return multiAdrequestInitialized;
+    final xandrIsInitialized = XandrSDKManager.initialized;
+
+    if (widget.controller is MultiAdRequestController) {
+      return (widget.controller as MultiAdRequestController).initialized;
+    }
+
+    return xandrIsInitialized;
   }
 
   Widget? nativeAdWidget() =>
@@ -291,7 +288,9 @@ class _AdBannerState extends State<AdBanner> {
               onDoneLoading: onDoneLoading,
               widgetId: _widgetId,
               enableLazyLoad: widget.enableLazyLoad,
-              multiAdRequestId: widget.multiAdRequestController?.requestId,
+              multiAdRequestId: (widget.controller is MultiAdRequestController)
+                  ? (widget.controller as MultiAdRequestController).requestId
+                  : null,
               onAdClicked: widget.onAdClicked,
               allowNativeDemand: widget.allowNativeDemand,
               nativeAdRendererId: widget.nativeAdRendererId,

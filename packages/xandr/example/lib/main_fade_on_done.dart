@@ -5,8 +5,9 @@ import 'package:xandr/ad_banner.dart';
 import 'package:xandr/ad_size.dart';
 import 'package:xandr/xandr.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await XandrSDKManager.initialize(9517, testMode: true);
   runApp(const MyApp());
 }
 
@@ -50,7 +51,7 @@ class _XandrExampleState extends State<XandrExample> {
   void initState() {
     super.initState();
 
-    _controller = XandrController()..init(9517);
+    _controller = XandrController();
     _scrollController.addListener(() {
       _checkIfAdIsInViewport.add(_scrollController.position);
     });

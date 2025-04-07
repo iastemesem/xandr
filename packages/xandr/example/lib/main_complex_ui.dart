@@ -4,8 +4,9 @@ import 'package:xandr/ad_size.dart' show AdSize;
 import 'package:xandr/load_mode.dart';
 import 'package:xandr/xandr.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await XandrSDKManager.initialize(9517, testMode: true);
   runApp(const MyApp());
 }
 
@@ -33,7 +34,6 @@ class _XandrComplexUiExample extends StatefulWidget {
 }
 
 class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
-  final XandrController _controller = XandrController();
   late final MultiAdRequestController _multiAdRequestController;
   final ScrollController _scrollController = ScrollController();
 
@@ -41,16 +41,13 @@ class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
   void dispose() {
     super.dispose();
     _scrollController.dispose();
-    _controller.resetController();
     _multiAdRequestController.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    _multiAdRequestController = MultiAdRequestController(
-      controller: _controller,
-    );
+    _multiAdRequestController = MultiAdRequestController();
 
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) async {
@@ -62,9 +59,8 @@ class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
   }
 
   Future<bool> _initializeControllers() async {
-    await _controller.init(9517, testMode: true);
-    await _multiAdRequestController.initWhenXandrIsReady();
-    return true;
+    final initialized = await _multiAdRequestController.init();
+    return initialized;
   }
 
   Future<bool> _loadAds() async {
@@ -88,10 +84,15 @@ class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
                   if (index.isOdd) {
                     return SliverToBoxAdapter(
                       child: AdBanner(
-                        controller: _controller,
-                        multiAdRequestController: _multiAdRequestController,
+                        controller: _multiAdRequestController,
                         loadsInBackground: true,
                         loadMode: LoadWhenCreated(),
+                        onBannerFinishLoading: ({
+                          height,
+                          nativeAd,
+                          required success,
+                          width,
+                        }) {},
                         key: ValueKey(index),
                         resizeWhenLoaded: true,
                         resizeAdToFitContainer: true,
