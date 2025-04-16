@@ -24,13 +24,6 @@ abstract class XandrPlatform extends PlatformInterface {
   /// Defaults to [MethodChannelXandr].
   static XandrPlatform get instance => _instance;
 
-  /// Registers the event stream.
-  void registerEventStream({
-    required StreamController<BannerAdEvent> controller,
-  }) {
-    _instance.registerEventStream(controller: controller);
-  }
-
   /// Platform-specific plugins should set this with their own platform-specific
   /// class that extends [XandrPlatform] when they register themselves.
   static set instance(XandrPlatform instance) {

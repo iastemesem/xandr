@@ -97,29 +97,3 @@ abstract class XandrHostApi {
     String? placementID,
   );
 }
-
-@FlutterApi()
-abstract class XandrFlutterApi {
-  void onAdLoaded(
-    int viewId,
-    int width,
-    int height,
-    String creativeId,
-    String adType,
-    String tagId,
-    String auctionId,
-    double cpm,
-    int memberId,
-  ) {}
-  void onAdLoadedError(int viewId, String reason) {}
-  void onNativeAdLoaded(
-    int viewId,
-    String title,
-    String description,
-    String imageUrl,
-    String clickUrl,
-    String customElements,
-  ) {}
-  void onNativeAdLoadedError(int viewId, String reason) {}
-  void onAdClicked(int viewId, String url) {}
-}

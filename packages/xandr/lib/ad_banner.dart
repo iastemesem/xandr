@@ -37,34 +37,33 @@ class AdBanner extends StatefulWidget {
     double? height,
     this.onBannerFinishLoading,
     this.onAdClicked,
-  })
-      : assert(adSizes.isNotEmpty, 'adSizes must not be empty'),
+  })  : assert(adSizes.isNotEmpty, 'adSizes must not be empty'),
         assert(
-        placementID != null || inventoryCode != null,
-        'placementID or inventoryCode must not be null',
+          placementID != null || inventoryCode != null,
+          'placementID or inventoryCode must not be null',
         ),
         assert(
-        (allowNativeDemand == false && nativeAdBuilder == null) ||
-            (allowNativeDemand == true && nativeAdBuilder != null),
-        'nativeAdBuilder must be set if allowNativeDemand is true',
+          (allowNativeDemand == false && nativeAdBuilder == null) ||
+              (allowNativeDemand == true && nativeAdBuilder != null),
+          'nativeAdBuilder must be set if allowNativeDemand is true',
         ),
         assert(
-        (nativeAdRendererId != null && allowNativeDemand == true) ||
-            nativeAdRendererId == null,
-        'allowNativeDemand must be true if nativeAdRendererId is set',
+          (nativeAdRendererId != null && allowNativeDemand == true) ||
+              nativeAdRendererId == null,
+          'allowNativeDemand must be true if nativeAdRendererId is set',
         ),
-  //Note: opensdk:auto_refresh_interval or
-  // adview.setAutoRefreshInterval(long interval): The interval, in
-  // milliseconds, at which the ad view will request new ads, if
-  // autorefresh is enabled. The minimum period is 15 seconds. The default
-  // period is 30 seconds. Set this to 0 to disable autorefresh.
-  //Note: while the docs says its in milliseconds, seconds seems to be the
-  // right unit.
-  // see: https://learn.microsoft.com/en-us/xandr/mobile-sdk/show-banners-on-android
+        //Note: opensdk:auto_refresh_interval or
+        // adview.setAutoRefreshInterval(long interval): The interval, in
+        // milliseconds, at which the ad view will request new ads, if
+        // autorefresh is enabled. The minimum period is 15 seconds. The default
+        // period is 30 seconds. Set this to 0 to disable autorefresh.
+        //Note: while the docs says its in milliseconds, seconds seems to be the
+        // right unit.
+        // see: https://learn.microsoft.com/en-us/xandr/mobile-sdk/show-banners-on-android
         assert(
-        autoRefreshInterval.inSeconds == 0 ||
-            autoRefreshInterval.inSeconds >= 15,
-        'autoRefreshInterval must be either 0 seconds or >= 15 seconds',
+          autoRefreshInterval.inSeconds == 0 ||
+              autoRefreshInterval.inSeconds >= 15,
+          'autoRefreshInterval must be either 0 seconds or >= 15 seconds',
         ),
         width = width ?? adSizes.first.width.toDouble(),
         height = height ?? adSizes.first.height.toDouble(),
@@ -98,8 +97,8 @@ class AdBanner extends StatefulWidget {
 
   /// If you want allow native ads - provide Widget builder for them
   final Widget Function(
-      NativeAdData nativeAd,
-      )? nativeAdBuilder;
+    NativeAdData nativeAd,
+  )? nativeAdBuilder;
 
   /// Whether to allow native ads to be served
   final bool allowNativeDemand;
@@ -201,10 +200,7 @@ class _AdBannerState extends State<AdBanner> {
     final vpHeight = viewport.paintBounds.height;
     final vpOffset = viewport.getOffsetToReveal(object, 0);
 
-    final deltaTop = vpOffset.offset - Scrollable
-        .of(context)
-        .position
-        .pixels;
+    final deltaTop = vpOffset.offset - Scrollable.of(context).position.pixels;
 
     if ((vpHeight - deltaTop) > pixelOffset) {
       if (!_loading) {
@@ -376,10 +372,10 @@ class NativeAdData {
 /// Represents a callback which is called when an ad is either loaded or
 /// throws an error
 typedef DoneLoadingCallback = void Function({
-required bool success,
-int? width,
-int? height,
-NativeAdData? nativeAd,
+  required bool success,
+  int? width,
+  int? height,
+  NativeAdData? nativeAd,
 });
 
 /// Represents a callback which is called when an ad is clicked
@@ -408,8 +404,7 @@ class _HostAdBannerView extends StatefulWidget {
     bool? enableLazyLoad,
     this.onAdClicked,
     this.nativeAdWidget,
-  })
-      : _onDoneLoading = onDoneLoading,
+  })  : _onDoneLoading = onDoneLoading,
         creationParams = <String, dynamic>{
           'placementID': placementID,
           'inventoryCode': inventoryCode,
@@ -470,9 +465,9 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
   @override
   Widget build(BuildContext context) {
     assert(
-    defaultTargetPlatform != TargetPlatform.android ||
-        defaultTargetPlatform != TargetPlatform.iOS,
-    'The AdBanner widget is not supported on $defaultTargetPlatform',
+      defaultTargetPlatform != TargetPlatform.android ||
+          defaultTargetPlatform != TargetPlatform.iOS,
+      'The AdBanner widget is not supported on $defaultTargetPlatform',
     );
     debugPrint('>>>> _HostAdBannerView: build widgetId: ');
     if (widget.nativeAdWidget != null) {
@@ -514,10 +509,10 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
     debugPrint('Created banner view: $id');
     _eventChannel = EventChannel('xandr_ad_event_channel_$id');
     _eventChannel.receiveBroadcastStream().listen((event) {
-      debugPrint('Xander ADEvent listener from native >>> $event');
+      debugPrint('Xandr >>> ADEvent from native >>> $event');
 
       final xandrAdEvent =
-      XandrAdEvent.fromJson(event as Map<dynamic, dynamic>);
+          XandrAdEvent.fromJson(event as Map<dynamic, dynamic>);
 
       if (xandrAdEvent.onAdLoaded()) {
         widget._onDoneLoading(
@@ -645,49 +640,4 @@ class XandrAdEvent {
 
   /// Checks if the event is an ad clicked event.
   bool onAdClicked() => event == 'onAdClicked';
-}
-
-/// A delegate for handling events related to banner ads.
-class BannerAdEventDelegate {
-  /// A delegate for handling events related to a banner ad.
-  ///
-  /// This delegate provides callbacks for various events that can occur
-  /// during the lifecycle of a banner ad, such as when the ad is loaded,
-  /// when an error occurs, or when the ad is clicked.
-  BannerAdEventDelegate({
-    this.onBannerAdLoaded,
-    this.onBannerAdLoadedError,
-    this.onNativeBannerAdLoaded,
-    this.onNativeBannerAdLoadedError,
-  });
-
-  /// A callback function that is called when a banner ad is loaded.
-  ///
-  /// The [onBannerAdLoaded] function takes a [BannerAdLoadedEvent] as a
-  /// parameter,
-  /// which provides information about the loaded banner ad.
-  /// If the [onBannerAdLoaded] function is not provided, no action will be
-  /// taken when a banner ad is loaded.
-  final void Function(BannerAdLoadedEvent)? onBannerAdLoaded;
-
-  /// Callback function that is called when a banner ad fails to load.
-  ///
-  /// The [onBannerAdLoadedError] function is a callback that is triggered
-  /// when a banner ad fails to load.
-  /// It takes an optional parameter of type [BannerAdLoadedErrorEvent],
-  /// which provides information about the error.
-  /// If the banner ad loads successfully, this function will not be called.
-  final void Function(BannerAdLoadedErrorEvent)? onBannerAdLoadedError;
-
-  /// Callback function that is called when a native banner ad is loaded.
-  ///
-  /// The [onNativeBannerAdLoaded] function takes a [NativeBannerAdLoadedEvent]
-  /// as a parameter.
-  /// This event contains information about the loaded native banner ad.
-  final void Function(NativeBannerAdLoadedEvent)? onNativeBannerAdLoaded;
-
-  /// Callback function that is called when there is an error loading a native
-  /// banner ad.
-  final void Function(NativeBannerAdLoadedErrorEvent)?
-  onNativeBannerAdLoadedError;
 }

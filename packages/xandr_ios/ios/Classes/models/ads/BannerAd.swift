@@ -221,7 +221,6 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
             "error" : error.localizedDescription
         ]
       )
-    state?.onAdLoadedError(viewId: viewId, reason: error.localizedDescription)
   }
 
   public func adWasClicked(_ ad: Any, withURL urlString: String) {
@@ -233,10 +232,6 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
                 "url" : urlString
             ]
         )
-      state?.onAdClickedAPI(
-        viewId: viewId,
-        url: urlString
-      )
     } else {
       logger.error(message: "BannerAd.adWasClicked: unknown \(ad)")
     }

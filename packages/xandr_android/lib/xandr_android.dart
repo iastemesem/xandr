@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:xandr_android/src/messages.g.dart' as messages;
 import 'package:xandr_platform_interface/xandr_platform_interface.dart';
 
@@ -56,15 +54,6 @@ class XandrAndroid extends XandrPlatform {
   /// Registers this class as the default instance of [XandrPlatform]
   static void registerWith() {
     XandrPlatform.instance = XandrAndroid();
-  }
-
-  @override
-  void registerEventStream({
-    required StreamController<BannerAdEvent> controller,
-  }) {
-    messages.XandrFlutterApi.setUp(
-      XandrEventHandler(controller: controller),
-    );
   }
 
   @override
@@ -179,99 +168,5 @@ class XandrAndroid extends XandrPlatform {
       inventoryCode,
       placementID,
     );
-  }
-}
-
-/// A class that implements the XandrFlutterApi interface for handling Xandr
-/// events.
-class XandrEventHandler implements messages.XandrFlutterApi {
-  /// A class representing a Xandr event handler.
-  ///
-  /// This class is used to handle events related to Xandr.
-  /// It provides a set of methods to handle different types of events.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// const XandrEventHandler();
-  /// ```
-  const XandrEventHandler({required StreamController<BannerAdEvent> controller})
-      : _controller = controller;
-
-  final StreamController<BannerAdEvent> _controller;
-
-  @override
-  void onAdLoaded(
-    int viewId,
-    int width,
-    int height,
-    String creativeId,
-    String adType,
-    String tagId,
-    String auctionId,
-    double cpm,
-    int memberId,
-  ) {
-    debugPrint('xandr.onAdLoaded: $viewId, size=${width}x$height, '
-        'creativeId=$creativeId, adType=$adType, tagId=$tagId, '
-        'auctionId=$auctionId, cpm=$cpm, memberId=$memberId');
-    _controller.add(
-      BannerAdLoadedEvent(
-        width: width,
-        height: height,
-        viewId: viewId,
-        creativeId: creativeId,
-        adType: adType,
-        tagId: tagId,
-        auctionId: auctionId,
-        cpm: cpm,
-        memberId: memberId,
-      ),
-    );
-  }
-
-  @override
-  void onAdLoadedError(int viewId, String reason) {
-    debugPrint("xandr.onAdLoadedError: $viewId, reason='$reason'");
-    _controller.add(BannerAdLoadedErrorEvent(viewId: viewId, reason: reason));
-  }
-
-  @override
-  void onNativeAdLoaded(
-    int viewId,
-    String title,
-    String description,
-    String imageUrl,
-    String clickUrl,
-    String customElements,
-  ) {
-    debugPrint(
-      "xandr.onNativeAdLoaded: $viewId, title='$title', "
-      "description='$description', imageUrl='$imageUrl', clickUrl='$clickUrl'",
-    );
-    final jsonCustomElements =
-        jsonDecode(customElements) as Map<String, dynamic>;
-    _controller.add(
-      NativeBannerAdLoadedEvent(
-        viewId: viewId,
-        title: title,
-        description: description,
-        imageUrl: imageUrl,
-        clickUrl: clickUrl,
-        customElements: jsonCustomElements,
-      ),
-    );
-  }
-
-  @override
-  void onNativeAdLoadedError(int viewId, String reason) {
-    debugPrint("xandr.onNativeAdLoadedError: $viewId, reason='$reason'");
-    _controller
-        .add(NativeBannerAdLoadedErrorEvent(viewId: viewId, reason: reason));
-  }
-
-  @override
-  void onAdClicked(int viewId, String url) {
-    debugPrint("xandr.onAdClicked: $viewId, url='$url'");
-    _controller.add(BannerAdClickedEvent(viewId: viewId, url: url));
   }
 }
