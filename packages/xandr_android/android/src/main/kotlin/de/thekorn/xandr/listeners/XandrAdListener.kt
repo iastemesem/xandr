@@ -1,6 +1,5 @@
 package de.thekorn.xandr.listeners
 
-import XandrFlutterApi
 import com.appnexus.opensdk.AdListener
 import com.appnexus.opensdk.AdView
 import com.appnexus.opensdk.NativeAdResponse
@@ -15,7 +14,6 @@ import org.json.JSONObject
 
 open class XandrAdListener(
     private var widgetId: Int,
-    private var flutterApi: XandrFlutterApi,
     private var eventSink: EventSink?
 ) :
     AdListener {
@@ -202,10 +200,9 @@ open class XandrAdListener(
 
 class XandrInterstitialAdListener(
     widgetId: Long,
-    flutterApi: XandrFlutterApi,
     private var interstitialAd: InterstitialAd,
     private var eventSink: EventChannel.EventSink?
-) : XandrAdListener(widgetId.toInt(), flutterApi, null) {
+) : XandrAdListener(widgetId.toInt(), null) {
     override fun onAdLoaded(view: AdView?) {
         super.onAdLoaded(view)
         interstitialAd.isLoaded.complete(true)
@@ -221,10 +218,9 @@ class XandrInterstitialAdListener(
 
 class XandrBannerAdListener(
     widgetId: Long,
-    flutterApi: XandrFlutterApi,
     private var banner: BannerAd,
     private var eventSink: EventChannel.EventSink?
-) : XandrAdListener(widgetId.toInt(), flutterApi, eventSink) {
+) : XandrAdListener(widgetId.toInt(), eventSink) {
 
     override fun onLazyAdLoaded(adView: AdView?) {
         Log.d(

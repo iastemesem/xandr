@@ -45,7 +45,6 @@ class BannerViewContainer(
                 if (banner.adListener == null)
                     banner.adListener = XandrBannerAdListener(
                         widgetId.toLong(),
-                        state.flutterApi,
                         banner,
                         eventSink,
                     )

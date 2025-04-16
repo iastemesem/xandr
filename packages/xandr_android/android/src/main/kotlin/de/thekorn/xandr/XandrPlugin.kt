@@ -94,8 +94,16 @@ class XandrPlugin :
             AdInitListener(this.flutterState)
         )
 
-        this.flutterState.isInitialized.invokeOnCompletion {
-            callback(Result.success(this.flutterState.isInitialized.getCompleted()))
+        this.flutterState.isInitialized.invokeOnCompletion { throwable : Throwable? ->
+            if (throwable != null) {
+                Log.d(
+                    "Xandr",
+                    "Error initializing Xandr SDK: ${throwable.message}"
+                )
+                callback(Result.failure(throwable))
+            } else {
+                callback(Result.success(this.flutterState.isInitialized.getCompleted()))
+            }
         }
     }
 
@@ -128,7 +136,6 @@ class XandrPlugin :
         interstitialAd = InterstitialAd(activity)
         interstitialAd.adListener = XandrInterstitialAdListener(
             widgetId,
-            this.flutterState.flutterApi,
             interstitialAd,
             null,
         )

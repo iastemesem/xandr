@@ -1,6 +1,5 @@
 package de.thekorn.xandr.models
 
-import XandrFlutterApi
 import XandrHostApi
 import android.app.Activity
 import android.content.Context
@@ -18,11 +17,9 @@ class FlutterState(var applicationContext: Context, private var binaryMessenger:
 
     var memberId by Delegates.notNull<Int>()
     var publisherId: Int? = null
-    lateinit var flutterApi: XandrFlutterApi
 
     fun startListening(methodCallHandler: XandrPlugin) {
         XandrHostApi.setUp(this.binaryMessenger, methodCallHandler)
-        this.flutterApi = XandrFlutterApi(this.binaryMessenger)
     }
 
     fun stopListening() {
