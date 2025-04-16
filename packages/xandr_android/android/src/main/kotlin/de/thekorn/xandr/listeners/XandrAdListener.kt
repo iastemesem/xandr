@@ -207,13 +207,17 @@ class XandrInterstitialAdListener(
 ) : XandrAdListener(widgetId.toInt(), null) {
     override fun onAdLoaded(view: AdView?) {
         super.onAdLoaded(view)
-        interstitialAd.isLoaded.complete(true)
+        if (!interstitialAd.isLoaded.isCompleted) {
+            interstitialAd.isLoaded.complete(true)
+        }
         Log.d("Xandr.InterstitialView", "onAdLoaded")
     }
 
     override fun onAdCollapsed(p0: AdView?) {
         super.onAdCollapsed(p0)
-        interstitialAd.isClosed.complete(true)
+        if(!interstitialAd.isClosed.isCompleted){
+            interstitialAd.isClosed.complete(true)
+        }
         Log.d("Xandr.InterstitialView", "onAdCollapsed")
     }
 }

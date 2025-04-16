@@ -107,8 +107,22 @@ class BannerAd(
     }
 
     override fun loadAd(): Boolean {
-        Log.d("Xandr.BannerView", "loadAd; id=$widgetId")
-        return super.loadAd()
+        
+        try {
+            Log.d("Xandr.BannerView", "loadAd; id=$widgetId")
+            return super.loadAd()
+        } catch (e: Exception) {
+            Log.e("Xandr.BannerView", "loadAd; id=$widgetId", e)
+            eventSink?.success(
+                mapOf(
+                    "event" to "onAdFailed",
+                    "widgetId" to widgetId.toLong(),
+                    "error" to e.toString()
+                )
+            )
+            return false
+        }
+        
     }
 
     override fun onActivityResumed(p0: Activity) {

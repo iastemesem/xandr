@@ -54,12 +54,12 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
     methodChannel?.setMethodCallHandler { [weak self] call, result in
         if call.method == "loadAd" {
           self?.loadAd()
-            result(result)
+            result(nil)
         }
         
         if call.method == "dispose" {
             self?.dispose()
-            result(result)
+            result(nil)
         }
         
         result(FlutterMethodNotImplemented)

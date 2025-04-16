@@ -177,7 +177,15 @@ class XandrPlugin :
             }
             Log.d("Xandr.Interstitial", "show")
         }
-        interstitialAd.isClosed.invokeOnCompletion {
+        interstitialAd.isClosed.invokeOnCompletion { throwable : Throwable? ->
+            if (throwable != null) {
+                Log.d(
+                    "Xandr",
+                    "Error showing interstitial ad: ${throwable.message}"
+                )
+                callback(Result.failure(throwable))
+            }
+            Log.d("Xandr.Interstitial", "isClosed")
             callback(Result.success(interstitialAd.isClosed.getCompleted()))
         }
     }
