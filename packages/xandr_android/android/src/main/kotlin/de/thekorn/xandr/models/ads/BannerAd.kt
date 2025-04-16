@@ -4,21 +4,22 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.DefaultLifecycleObserver
 import com.appnexus.opensdk.ANClickThroughAction
 import com.appnexus.opensdk.BannerAdView
-import de.thekorn.xandr.listeners.XandrBannerAdListener
 import de.thekorn.xandr.models.BannerViewOptions
 import de.thekorn.xandr.models.FlutterState
 import de.thekorn.xandr.models.MultiAdRequestRegistry
 import io.flutter.Log
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.EventChannel.EventSink
 
 @SuppressLint("ViewConstructor")
 class BannerAd(
     private var activity: Activity,
     private var state: FlutterState,
-    private var widgetId: Int
+    private var widgetId: Int,
+    private var eventSink: EventChannel.EventSink?,
 ) : BannerAdView(activity),
     DefaultLifecycleObserver,
     Application.ActivityLifecycleCallbacks {
@@ -60,9 +61,11 @@ class BannerAd(
                     "open_device_browser" -> {
                         this.clickThroughAction = ANClickThroughAction.OPEN_DEVICE_BROWSER
                     }
+
                     "open_sdk_browser" -> {
                         this.clickThroughAction = ANClickThroughAction.OPEN_SDK_BROWSER
                     }
+
                     "return_url" -> {
                         this.clickThroughAction = ANClickThroughAction.RETURN_URL
                     }
@@ -104,23 +107,8 @@ class BannerAd(
     }
 
     override fun loadAd(): Boolean {
-        if (adListener != null) {
-            Log.d("Xandr.BannerView", "loadAd; id=$widgetId / stopped because ad already loaded")
-            return false
-        } else {
-            Log.d("Xandr.BannerView", "loadAd; id=$widgetId")
-            this.adListener = null
-
-            this.adListener = XandrBannerAdListener(
-                widgetId.toLong(),
-                state.flutterApi,
-                this
-            )
-            this.setBackgroundColor(
-                ContextCompat.getColor(activity, android.R.color.transparent)
-            )
-            return super.loadAd()
-        }
+        Log.d("Xandr.BannerView", "loadAd; id=$widgetId")
+        return super.loadAd()
     }
 
     override fun onActivityResumed(p0: Activity) {
@@ -133,9 +121,9 @@ class BannerAd(
         this.activityOnPause()
     }
 
-    override fun onActivityDestroyed(p0: Activity) { }
-    override fun onActivityCreated(p0: Activity, p1: Bundle?) { }
-    override fun onActivityStarted(p0: Activity) { }
-    override fun onActivityStopped(p0: Activity) { }
-    override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) { }
+    override fun onActivityDestroyed(p0: Activity) {}
+    override fun onActivityCreated(p0: Activity, p1: Bundle?) {}
+    override fun onActivityStarted(p0: Activity) {}
+    override fun onActivityStopped(p0: Activity) {}
+    override fun onActivitySaveInstanceState(p0: Activity, p1: Bundle) {}
 }

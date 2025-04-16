@@ -56,7 +56,7 @@ class XandrPlugin :
             "de.thekorn.xandr/ad_banner",
             BannerViewFactory(
                 activity,
-                this.flutterState
+                this.flutterState,
             )
         )
     }
@@ -129,7 +129,8 @@ class XandrPlugin :
         interstitialAd.adListener = XandrInterstitialAdListener(
             widgetId,
             this.flutterState.flutterApi,
-            interstitialAd
+            interstitialAd,
+            null,
         )
         customKeywords?.forEach {
             it.value.forEach { value ->

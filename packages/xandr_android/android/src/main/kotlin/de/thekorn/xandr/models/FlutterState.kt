@@ -40,7 +40,8 @@ class FlutterState(var applicationContext: Context, private var binaryMessenger:
                 activity,
                 this,
                 id,
-                (args as? Map<*, *>)?.toBannerAdViewOptions()
+                (args as? Map<*, *>)?.toBannerAdViewOptions(),
+                this.binaryMessenger,
             )
         }
         Log.d("Xandr.BannerViewFactory", "Return existing FlutterBannerAdView for id=$id")

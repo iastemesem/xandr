@@ -37,33 +37,34 @@ class AdBanner extends StatefulWidget {
     double? height,
     this.onBannerFinishLoading,
     this.onAdClicked,
-  })  : assert(adSizes.isNotEmpty, 'adSizes must not be empty'),
+  })
+      : assert(adSizes.isNotEmpty, 'adSizes must not be empty'),
         assert(
-          placementID != null || inventoryCode != null,
-          'placementID or inventoryCode must not be null',
+        placementID != null || inventoryCode != null,
+        'placementID or inventoryCode must not be null',
         ),
         assert(
-          (allowNativeDemand == false && nativeAdBuilder == null) ||
-              (allowNativeDemand == true && nativeAdBuilder != null),
-          'nativeAdBuilder must be set if allowNativeDemand is true',
+        (allowNativeDemand == false && nativeAdBuilder == null) ||
+            (allowNativeDemand == true && nativeAdBuilder != null),
+        'nativeAdBuilder must be set if allowNativeDemand is true',
         ),
         assert(
-          (nativeAdRendererId != null && allowNativeDemand == true) ||
-              nativeAdRendererId == null,
-          'allowNativeDemand must be true if nativeAdRendererId is set',
+        (nativeAdRendererId != null && allowNativeDemand == true) ||
+            nativeAdRendererId == null,
+        'allowNativeDemand must be true if nativeAdRendererId is set',
         ),
-        //Note: opensdk:auto_refresh_interval or
-        // adview.setAutoRefreshInterval(long interval): The interval, in
-        // milliseconds, at which the ad view will request new ads, if
-        // autorefresh is enabled. The minimum period is 15 seconds. The default
-        // period is 30 seconds. Set this to 0 to disable autorefresh.
-        //Note: while the docs says its in milliseconds, seconds seems to be the
-        // right unit.
-        // see: https://learn.microsoft.com/en-us/xandr/mobile-sdk/show-banners-on-android
+  //Note: opensdk:auto_refresh_interval or
+  // adview.setAutoRefreshInterval(long interval): The interval, in
+  // milliseconds, at which the ad view will request new ads, if
+  // autorefresh is enabled. The minimum period is 15 seconds. The default
+  // period is 30 seconds. Set this to 0 to disable autorefresh.
+  //Note: while the docs says its in milliseconds, seconds seems to be the
+  // right unit.
+  // see: https://learn.microsoft.com/en-us/xandr/mobile-sdk/show-banners-on-android
         assert(
-          autoRefreshInterval.inSeconds == 0 ||
-              autoRefreshInterval.inSeconds >= 15,
-          'autoRefreshInterval must be either 0 seconds or >= 15 seconds',
+        autoRefreshInterval.inSeconds == 0 ||
+            autoRefreshInterval.inSeconds >= 15,
+        'autoRefreshInterval must be either 0 seconds or >= 15 seconds',
         ),
         width = width ?? adSizes.first.width.toDouble(),
         height = height ?? adSizes.first.height.toDouble(),
@@ -97,8 +98,8 @@ class AdBanner extends StatefulWidget {
 
   /// If you want allow native ads - provide Widget builder for them
   final Widget Function(
-    NativeAdData nativeAd,
-  )? nativeAdBuilder;
+      NativeAdData nativeAd,
+      )? nativeAdBuilder;
 
   /// Whether to allow native ads to be served
   final bool allowNativeDemand;
@@ -200,7 +201,10 @@ class _AdBannerState extends State<AdBanner> {
     final vpHeight = viewport.paintBounds.height;
     final vpOffset = viewport.getOffsetToReveal(object, 0);
 
-    final deltaTop = vpOffset.offset - Scrollable.of(context).position.pixels;
+    final deltaTop = vpOffset.offset - Scrollable
+        .of(context)
+        .position
+        .pixels;
 
     if ((vpHeight - deltaTop) > pixelOffset) {
       if (!_loading) {
@@ -277,7 +281,6 @@ class _AdBannerState extends State<AdBanner> {
               customKeywords: widget.customKeywords ?? {},
               autoRefreshInterval: widget.autoRefreshInterval,
               resizeWhenLoaded: widget.resizeWhenLoaded,
-              controller: widget.controller,
               layoutHeight: _height.toInt(),
               layoutWidth: _width.toInt(),
               clickThroughAction: widget.clickThroughAction,
@@ -373,26 +376,25 @@ class NativeAdData {
 /// Represents a callback which is called when an ad is either loaded or
 /// throws an error
 typedef DoneLoadingCallback = void Function({
-  required bool success,
-  int? width,
-  int? height,
-  NativeAdData? nativeAd,
+required bool success,
+int? width,
+int? height,
+NativeAdData? nativeAd,
 });
 
 /// Represents a callback which is called when an ad is clicked
 typedef AdClickedCallback = void Function(String url);
 
-class _HostAdBannerView extends StatelessWidget {
+class _HostAdBannerView extends StatefulWidget {
   _HostAdBannerView({
     required String? placementID,
-    required String? inventoryCode,
+    required this.inventoryCode,
     required List<AdSize> adSizes,
     required CustomKeywords customKeywords,
     required bool allowNativeDemand,
     required int? nativeAdRendererId,
     required Duration autoRefreshInterval,
     required bool resizeWhenLoaded,
-    required this.controller,
     required this.layoutHeight,
     required this.layoutWidth,
     required bool resizeAdToFitContainer,
@@ -406,7 +408,8 @@ class _HostAdBannerView extends StatelessWidget {
     bool? enableLazyLoad,
     this.onAdClicked,
     this.nativeAdWidget,
-  })  : _onDoneLoading = onDoneLoading,
+  })
+      : _onDoneLoading = onDoneLoading,
         creationParams = <String, dynamic>{
           'placementID': placementID,
           'inventoryCode': inventoryCode,
@@ -442,46 +445,58 @@ class _HostAdBannerView extends StatelessWidget {
 
   static const StandardMessageCodec _decoder = StandardMessageCodec();
   final Map<String, dynamic> creationParams;
-  final XandrController controller;
   final DoneLoadingCallback _onDoneLoading;
   final Completer<int> widgetId;
   final AdClickedCallback? onAdClicked;
   final Widget? nativeAdWidget;
   final int layoutWidth;
   final int layoutHeight;
+  final String? inventoryCode;
 
   static const viewType = 'de.thekorn.xandr/ad_banner';
 
   @override
+  State<_HostAdBannerView> createState() => _HostAdBannerViewState();
+}
+
+class _HostAdBannerViewState extends State<_HostAdBannerView> {
+  late final EventChannel _eventChannel;
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     assert(
-      defaultTargetPlatform != TargetPlatform.android ||
-          defaultTargetPlatform != TargetPlatform.iOS,
-      'The AdBanner widget is not supported on $defaultTargetPlatform',
+    defaultTargetPlatform != TargetPlatform.android ||
+        defaultTargetPlatform != TargetPlatform.iOS,
+    'The AdBanner widget is not supported on $defaultTargetPlatform',
     );
     debugPrint('>>>> _HostAdBannerView: build widgetId: ');
-    if (nativeAdWidget != null) {
-      return nativeAdWidget!;
+    if (widget.nativeAdWidget != null) {
+      return widget.nativeAdWidget!;
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       return SizedBox(
-        width: layoutWidth.toDouble(),
-        height: layoutHeight.toDouble(),
+        width: widget.layoutWidth.toDouble(),
+        height: widget.layoutHeight.toDouble(),
         child: AndroidView(
-          viewType: viewType,
+          viewType: _HostAdBannerView.viewType,
           onPlatformViewCreated: onPlatformViewCreated,
-          creationParams: creationParams,
-          creationParamsCodec: _decoder,
+          creationParams: widget.creationParams,
+          creationParamsCodec: _HostAdBannerView._decoder,
         ),
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return SizedBox(
-        width: layoutWidth.toDouble(),
-        height: layoutHeight.toDouble(),
+        width: widget.layoutWidth.toDouble(),
+        height: widget.layoutHeight.toDouble(),
         child: UiKitView(
-          viewType: viewType,
+          viewType: _HostAdBannerView.viewType,
           onPlatformViewCreated: onPlatformViewCreated,
-          creationParams: creationParams,
-          creationParamsCodec: _decoder,
+          creationParams: widget.creationParams,
+          creationParamsCodec: _HostAdBannerView._decoder,
         ),
       );
     } else {
@@ -492,35 +507,144 @@ class _HostAdBannerView extends StatelessWidget {
   }
 
   void onPlatformViewCreated(int id) {
-    debugPrint('Created banner view: $id');
-    if (!widgetId.isCompleted) {
-      widgetId.complete(id);
+    if (!widget.widgetId.isCompleted) {
+      widget.widgetId.complete(id);
     }
-    controller.listen(id, (event) {
-      debugPrint('>>>> controller listen: $event');
-      if (event is BannerAdLoadedEvent) {
-        _onDoneLoading(success: true, width: event.width, height: event.height);
-      } else if (event is BannerAdLoadedErrorEvent) {
-        _onDoneLoading(success: false);
-      } else if (event is NativeBannerAdLoadedEvent) {
-        _onDoneLoading(
+
+    debugPrint('Created banner view: $id');
+    _eventChannel = EventChannel('xandr_ad_event_channel_$id');
+    _eventChannel.receiveBroadcastStream().listen((event) {
+      debugPrint('Xander ADEvent listener from native >>> $event');
+
+      final xandrAdEvent =
+      XandrAdEvent.fromJson(event as Map<dynamic, dynamic>);
+
+      if (xandrAdEvent.onAdLoaded()) {
+        widget._onDoneLoading(
+          success: true,
+          width: xandrAdEvent.width,
+          height: xandrAdEvent.height,
+        );
+        return;
+      }
+
+      if (xandrAdEvent.onNativeAdLoaded()) {
+        widget._onDoneLoading(
           success: true,
           nativeAd: NativeAdData(
-            viewId: event.viewId,
-            title: event.title,
-            description: event.description,
-            imageUrl: event.imageUrl,
-            clickUrl: event.clickUrl,
-            customElements: event.customElements,
+            viewId: xandrAdEvent.viewId!,
+            title: xandrAdEvent.title ?? '',
+            description: xandrAdEvent.description ?? '',
+            imageUrl: xandrAdEvent.imageUrl ?? '',
+            clickUrl: xandrAdEvent.clickUrl ?? '',
+            customElements: xandrAdEvent.customElements ?? {},
           ),
         );
-      } else if (event is NativeBannerAdLoadedErrorEvent) {
-        _onDoneLoading(success: false);
-      } else if (event is BannerAdClickedEvent) {
-        onAdClicked?.call(event.url);
+        return;
+      }
+
+      if (xandrAdEvent.onAdLoadedError() ||
+          xandrAdEvent.onAdNativeLoadedError()) {
+        widget._onDoneLoading(success: false);
+        return;
+      }
+
+      if (xandrAdEvent.onAdClicked()) {
+        if (xandrAdEvent.url != null) {
+          widget.onAdClicked?.call(xandrAdEvent.url!);
+        }
+        return;
       }
     });
   }
+}
+
+/// A class that represents the json data of a banner event
+class XandrAdEvent {
+  /// Default constructor for the [XandrAdEvent] class
+  XandrAdEvent({
+    required this.event,
+    required this.widgetId,
+    required this.viewId,
+    required this.width,
+    required this.height,
+    required this.title,
+    required this.description,
+    required this.imageUrl,
+    required this.clickUrl,
+    required this.customElements,
+    required this.url,
+    required this.error,
+  });
+
+  /// Creates an instance of [XandrAdEvent] from a JSON object.
+  factory XandrAdEvent.fromJson(Map<dynamic, dynamic> json) {
+    return XandrAdEvent(
+      event: json['event'] as String,
+      widgetId: json['widgetId'] as int?,
+      viewId: json['viewId'] as int?,
+      width: json['width'] as int?,
+      height: json['height'] as int?,
+      title: json['title'] as String?,
+      description: json['description'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      clickUrl: json['clickUrl'] as String?,
+      customElements: json['customElements'] as Map<String, dynamic>?,
+      url: json['url'] as String?,
+      error: json['error'] as String?,
+    );
+  }
+
+  /// The event type
+  final String event;
+
+  /// The ID of the widget associated with the event
+  final int? widgetId;
+
+  /// The ID of the native widget associated with the event
+  final int? viewId;
+
+  /// The width of the ad
+  final int? width;
+
+  /// The height of the ad
+  final int? height;
+
+  /// The title of the native ad
+  final String? title;
+
+  /// The description of the native ad
+  final String? description;
+
+  /// The URL of the image associated with the native ad
+  final String? imageUrl;
+
+  /// The URL to be opened when the native ad is clicked
+  final String? clickUrl;
+
+  /// A map containing custom elements associated with the native ad
+  final Map<String, dynamic>? customElements;
+
+  /// The URL associated with the ad when clicked
+  final String? url;
+
+  /// The error message associated with the ad event
+  final String? error;
+
+  /// Checks if the event is an ad loaded event.
+  bool onAdLoaded() => event == 'onAdLoaded';
+
+  /// Checks if the event is an ad native loaded event.
+  bool onNativeAdLoaded() => event == 'onNativeAdLoaded';
+
+  /// Checks if the event is an ad loaded error event.
+  bool onAdLoadedError() => event == 'onAdLoadedError';
+
+  /// Checks if the event is an ad native loaded error event.
+  bool onAdNativeLoadedError() => event == 'onAdNativeLoadedError';
+
+  /// Checks if the event is an ad clicked event.
+  bool onAdClicked() => event == 'onAdClicked';
 }
 
 /// A delegate for handling events related to banner ads.
@@ -565,5 +689,5 @@ class BannerAdEventDelegate {
   /// Callback function that is called when there is an error loading a native
   /// banner ad.
   final void Function(NativeBannerAdLoadedErrorEvent)?
-      onNativeBannerAdLoadedError;
+  onNativeBannerAdLoadedError;
 }

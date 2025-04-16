@@ -33,18 +33,6 @@ class XandrSDKManager {
 
 /// A controller for managing Xandr functionality.
 class XandrController {
-  /// Creates a new instance of the XandrController class.
-  ///
-  /// This class is responsible for controlling the Xandr functionality.
-  /// It initializes the necessary components and provides methods for
-  /// interacting with Xandr.
-  XandrController() {
-    _platform.registerEventStream(controller: _eventStreamController);
-  }
-
-  final StreamController<BannerAdEvent> _eventStreamController =
-      StreamController.broadcast();
-
   /// Resets XandrController instance
   Future<void> resetController() async {
     await _platform.resetController();
@@ -78,23 +66,6 @@ class XandrController {
   Future<bool> showInterstitialAd({Duration? autoDismissDelay}) async {
     debugPrint('showInterstitialAd');
     return _platform.showInterstitialAd(autoDismissDelay);
-  }
-
-  /// Listens to the stream of strings and returns a [StreamSubscription] that
-  /// can be used to cancel the subscription.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// StreamSubscription<BannerAdEvent> subscription = listen();
-  /// subscription.cancel();
-  /// ```
-  StreamSubscription<BannerAdEvent> listen(
-    int widgetId,
-    void Function(BannerAdEvent) callback,
-  ) {
-    return _eventStreamController.stream
-        .where((event) => event.viewId == widgetId)
-        .listen(callback);
   }
 
   /// Sets the autoRefreshInterval value of a banner view
