@@ -12,6 +12,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import io.flutter.plugin.platform.PlatformView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.flutter.plugin.common.MethodChannel
 
 class BannerViewContainer(
     activity: Activity,
@@ -23,6 +24,7 @@ class BannerViewContainer(
     val banner: BannerAd
     private var eventSink: EventChannel.EventSink? = null
     private val eventChannel = EventChannel(messenger, "xandr_ad_event_channel_$widgetId")
+    private val methodChannel = MethodChannel(messenger, "xandr_ad_banner_channel_$widgetId")
 
 
     init {
@@ -54,6 +56,25 @@ class BannerViewContainer(
                 eventSink = null
             }
         })
+
+        methodChannel.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "loadAd" -> {
+                    Log.d("Xandr.BannerView", "loadAd called")
+                    loadAd()
+                    result.success(null)
+                }
+                "dispose" -> {
+                    Log.d("Xandr.BannerView", "dispose called")
+                    dispose()
+                    result.success(null)
+                }
+                else -> {
+                    Log.d("Xandr.BannerView", "Unknown method called: ${call.method}")
+                    result.notImplemented()
+                }
+            }
+        }
     }
 
 

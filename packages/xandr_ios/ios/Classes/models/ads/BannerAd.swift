@@ -31,6 +31,7 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
   public var viewId: Int64
   private var eventSink: FlutterEventSink?
   private var eventChannel: FlutterEventChannel?
+  private var methodChannel: FlutterMethodChannel?
 
   init(state: FlutterState, frame: CGRect,
        viewIdentifier viewId: Int64,
@@ -40,6 +41,7 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
     self.viewId = viewId
     if messenger != nil {
         eventChannel = FlutterEventChannel(name: "xandr_ad_event_channel_\(viewId)", binaryMessenger: messenger!)
+        methodChannel = FlutterMethodChannel(name: "xandr_ad_method_channel_\(viewId)", binaryMessenger: messenger!)
     }
       
     super.init()
@@ -49,6 +51,19 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
     self.state = state
       
     eventChannel?.setStreamHandler(self)
+    methodChannel?.setMethodCallHandler { [weak self] call, result in
+        if call.method == "loadAd" {
+          self?.loadAd()
+            result(result)
+        }
+        
+        if call.method == "dispose" {
+            self?.dispose()
+            result(result)
+        }
+        
+        result(FlutterMethodNotImplemented)
+      }
 
     guard let arguments = args as? [String: Any] else {
       return
@@ -150,6 +165,12 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
   func loadAd() {
     banner?.loadAd()
   }
+    
+    func dispose() {
+        banner?.delegate = nil
+        banner?.removeFromSuperview()
+        banner = nil
+    }
 
   public func adDidReceiveAd(_ ad: Any) {
     if ad is ANBannerAdView {
@@ -237,6 +258,7 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
     }
   }
     
+    /// Flutter stream handler methods, used from EventSink and EventChannel
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         eventSink = events
         return nil
@@ -245,5 +267,9 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
     func onCancel(withArguments arguments: Any?) -> FlutterError? {
         eventSink = nil
         return nil
+    }
+    
+    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        result("Hello World!")
     }
 }

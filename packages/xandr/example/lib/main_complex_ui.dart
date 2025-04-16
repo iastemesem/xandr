@@ -70,6 +70,13 @@ class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await _loadAds();
+        },
+        child: const Icon(Icons.refresh),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       appBar: AppBar(
         title: const Text('Xandr Example - Complex UI'),
       ),

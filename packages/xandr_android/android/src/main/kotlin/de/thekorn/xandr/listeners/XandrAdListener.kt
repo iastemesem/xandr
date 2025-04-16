@@ -71,7 +71,9 @@ open class XandrAdListener(
                 clickUrl =
                     JsonUtil.getJSONObject(nativeResponseJSON, "link").getString("fallback_url")
             }
+
             customElements = nativeResponseJSON.toString()
+            
             Log.d(
                 "Xandr.BannerView",
                 ">>> Ad Loaded, NativeAdResponse customElements=$customElements"
