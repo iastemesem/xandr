@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:xandr/ad_size.dart';
 import 'package:xandr/load_mode.dart';
 import 'package:xandr/xandr.dart';
@@ -456,9 +457,15 @@ class _HostAdBannerView extends StatefulWidget {
 
 class _HostAdBannerViewState extends State<_HostAdBannerView> {
   late final EventChannel _eventChannel;
+  MethodChannel? _methodChannel;
+  StreamSubscription<dynamic>? _eventSubscription;
 
   @override
   void dispose() {
+    debugPrint('>>>> _HostAdBannerView: dispose widgetId: ${widget.widgetId}');
+    _eventSubscription?.cancel();
+    _eventSubscription = null;
+    _methodChannel?.invokeMethod('dispose');
     super.dispose();
   }
 
@@ -505,10 +512,15 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
     if (!widget.widgetId.isCompleted) {
       widget.widgetId.complete(id);
     }
-
     debugPrint('Created banner view: $id');
+
+    _initEventsChannel(id);
+    _initMethodsChannel(id);
+  }
+
+  void _initEventsChannel(int id) {
     _eventChannel = EventChannel('xandr_ad_event_channel_$id');
-    _eventChannel.receiveBroadcastStream().listen((event) {
+    _eventSubscription = _eventChannel.receiveBroadcastStream().listen((event) {
       debugPrint('Xandr >>> ADEvent from native >>> $event');
 
       final xandrAdEvent =
@@ -527,7 +539,7 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
         widget._onDoneLoading(
           success: true,
           nativeAd: NativeAdData(
-            viewId: xandrAdEvent.viewId!,
+            viewId: xandrAdEvent.viewId ?? 0,
             title: xandrAdEvent.title ?? '',
             description: xandrAdEvent.description ?? '',
             imageUrl: xandrAdEvent.imageUrl ?? '',
@@ -552,6 +564,10 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
       }
     });
   }
+
+  void _initMethodsChannel(int id) {
+    _methodChannel = MethodChannel('xandr_ad_banner_channel_$id');
+  }
 }
 
 /// A class that represents the json data of a banner event
@@ -574,6 +590,16 @@ class XandrAdEvent {
 
   /// Creates an instance of [XandrAdEvent] from a JSON object.
   factory XandrAdEvent.fromJson(Map<dynamic, dynamic> json) {
+    final jsonCustomElements = json['jsonCustomElementsMap'];
+    var jsonCustomElementsMap = <String, dynamic>{};
+    if (jsonCustomElements is String) {
+      jsonCustomElementsMap =
+          jsonDecode(jsonCustomElements) as Map<String, dynamic>;
+    }
+    if (jsonCustomElements is Map) {
+      jsonCustomElementsMap = jsonCustomElements as Map<String, dynamic>;
+    }
+
     return XandrAdEvent(
       event: json['event'] as String,
       widgetId: json['widgetId'] as int?,
@@ -584,7 +610,7 @@ class XandrAdEvent {
       description: json['description'] as String?,
       imageUrl: json['imageUrl'] as String?,
       clickUrl: json['clickUrl'] as String?,
-      customElements: json['customElements'] as Map<String, dynamic>?,
+      customElements: jsonCustomElementsMap,
       url: json['url'] as String?,
       error: json['error'] as String?,
     );
