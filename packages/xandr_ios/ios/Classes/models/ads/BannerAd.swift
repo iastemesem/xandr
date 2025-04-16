@@ -41,7 +41,7 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
     self.viewId = viewId
     if messenger != nil {
         eventChannel = FlutterEventChannel(name: "xandr_ad_event_channel_\(viewId)", binaryMessenger: messenger!)
-        methodChannel = FlutterMethodChannel(name: "xandr_ad_method_channel_\(viewId)", binaryMessenger: messenger!)
+        methodChannel = FlutterMethodChannel(name: "xandr_ad_banner_channel_\(viewId)", binaryMessenger: messenger!)
     }
       
     super.init()
