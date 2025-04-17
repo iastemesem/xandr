@@ -20,6 +20,10 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class XandrPlugin :
     FlutterPlugin,
@@ -81,18 +85,28 @@ class XandrPlugin :
         testMode: Boolean,
         callback: (Result<Boolean>) -> Unit
     ) {
-        SDKSettings.enableTestMode(testMode)
-        SDKSettings.enableBackgroundThreading(true)
-
-        this.flutterState.memberId = memberId.toInt()
-        this.flutterState.publisherId = publisherId?.toInt()
-        XandrAd.init(
-            memberId.toInt(),
-            this.flutterState.applicationContext,
-            true,
-            true,
-            AdInitListener(this.flutterState)
-        )
+        try {
+            SDKSettings.enableTestMode(testMode)
+            SDKSettings.enableBackgroundThreading(true)
+    
+            this.flutterState.memberId = memberId.toInt()
+            this.flutterState.publisherId = publisherId?.toInt()
+            XandrAd.init(
+                memberId.toInt(),
+                this.flutterState.applicationContext,
+                true,
+                true,
+                AdInitListener(this.flutterState)
+            )
+        } catch (e: Exception) {
+            Log.d(
+                "Xandr",
+                "Error initializing Xandr SDK: ${e.message}"
+            )
+            callback(Result.failure(e))
+            return
+        }
+        
 
         this.flutterState.isInitialized.invokeOnCompletion { throwable : Throwable? ->
             if (throwable != null) {
@@ -109,9 +123,7 @@ class XandrPlugin :
 
     override fun resetController(callback: (Result<Unit>) -> Unit) {
         Log.d("Xandr", "Resetting list of managed banners")
-        this.flutterState.stopListening()
         flutterState.flushBannerAdViewList()
-        this.flutterState.startListening(this)
         callback(Result.success(Unit))
     }
 
@@ -145,7 +157,7 @@ class XandrPlugin :
             }
         }
 
-        this.flutterState.isInitialized.invokeOnCompletion {
+        this.flutterState.isInitialized.invokeOnCompletion{
             // / need to make sure the sdk is initialized to access the memberId
             // / docs: Note that if both inventory code and placement ID are passed in, the
             //        inventory code will be passed to the server instead of the placement ID.
@@ -156,8 +168,16 @@ class XandrPlugin :
             }
             interstitialAd.loadAd()
             Log.d("Xandr.Interstitial", "Loading DONE")
+
             interstitialAd.isLoaded.invokeOnCompletion {
-                callback(Result.success(interstitialAd.isLoaded.getCompleted()))
+                val error = interstitialAd.isLoaded.getCompletionExceptionOrNull()
+                if (error != null) {
+                    callback(Result.failure(error))
+                } else if (interstitialAd.isLoaded.isCompleted) {
+                    callback(Result.success(interstitialAd.isLoaded.getCompleted()))
+                } else {
+                    callback(Result.success(false))
+                }
             }
         }
     }
@@ -170,24 +190,29 @@ class XandrPlugin :
         }
 
         interstitialAd.isLoaded.invokeOnCompletion {
-            if (autoDismissDelay == null) {
-                interstitialAd.show()
-            } else {
-                interstitialAd.showWithAutoDismissDelay(autoDismissDelay.toInt())
-            }
-            Log.d("Xandr.Interstitial", "show")
+            val error = interstitialAd.isLoaded.getCompletionExceptionOrNull()
+                if (error != null) {
+                    callback(Result.failure(error))
+                } else if (interstitialAd.isLoaded.isCompleted) {
+                    Log.d("Xandr.Interstitial", "show")
+                    if (autoDismissDelay == null) {
+                        interstitialAd.show()
+                    } else {
+                        interstitialAd.showWithAutoDismissDelay(autoDismissDelay.toInt())
+                    }
+                }   
         }
-        interstitialAd.isClosed.invokeOnCompletion { throwable : Throwable? ->
-            if (throwable != null) {
-                Log.d(
-                    "Xandr",
-                    "Error showing interstitial ad: ${throwable.message}"
-                )
-                callback(Result.failure(throwable))
+
+        interstitialAd.isClosed.invokeOnCompletion { 
+                val error = interstitialAd.isClosed.getCompletionExceptionOrNull()
+                if (error != null) {
+                    callback(Result.failure(error))
+                } else if (interstitialAd.isClosed.isCompleted) {
+                    callback(Result.success(interstitialAd.isClosed.getCompleted()))
+                } else {
+                    callback(Result.success(true))
+                }
             }
-            Log.d("Xandr.Interstitial", "isClosed")
-            callback(Result.success(interstitialAd.isClosed.getCompleted()))
-        }
     }
 
     override fun setPublisherUserId(publisherUserId: String, callback: (Result<Unit>) -> Unit) {

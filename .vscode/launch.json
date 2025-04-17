@@ -25,5 +25,19 @@
             "type": "dart",
             "program": "lib/main_multi_ad_request.dart",
         },
+        {
+            "name": "example:complexui",
+            "cwd": "packages/xandr/example",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_complex_ui.dart",
+        },
+        {
+            "name": "example:native",
+            "cwd": "packages/xandr/example",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_native.dart",
+        }
     ]
 }

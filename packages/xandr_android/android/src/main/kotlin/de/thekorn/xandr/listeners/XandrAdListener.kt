@@ -11,6 +11,8 @@ import io.flutter.Log
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import org.json.JSONObject
+import android.os.Handler
+import android.os.Looper
 
 open class XandrAdListener(
     private var widgetId: Int,
@@ -178,12 +180,16 @@ open class XandrAdListener(
             "Xandr.BannerView",
             ">>> Ad lazy loaded, AdView:p0=$adView"
         )
-        eventSink?.success(
-            mapOf(
-                "event" to "onLazyAdLoaded",
-                "widgetId" to widgetId.toLong()
+
+        /// Need to be called on main thread
+        Handler(Looper.getMainLooper()).post {
+            eventSink?.success(
+                mapOf(
+                    "event" to "onLazyAdLoaded",
+                    "widgetId" to widgetId.toLong()
+                )
             )
-        )
+        }
     }
 
     override fun onAdImpression(p0: AdView?) {

@@ -52,7 +52,7 @@ class _XandrComplexUiExampleState extends State<_XandrComplexUiExample> {
     WidgetsBinding.instance.addPostFrameCallback(
       (timeStamp) async {
         // Load ads after initializing controllers
-        await Future<void>.delayed(const Duration(seconds: 5));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
         await _loadAds();
       },
     );
