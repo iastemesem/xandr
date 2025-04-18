@@ -19,10 +19,12 @@ class BannerAd(
     private var activity: Activity,
     private var state: FlutterState,
     private var widgetId: Int,
-    private var eventSink: EventChannel.EventSink?,
+    private var eventSink: EventChannel.EventSink?
 ) : BannerAdView(activity),
     DefaultLifecycleObserver,
     Application.ActivityLifecycleCallbacks {
+
+    private var configured = false
 
     init {
         activity.application.registerActivityLifecycleCallbacks(this)
@@ -97,9 +99,19 @@ class BannerAd(
             //        inventory code will be passed to the server instead of the placement ID.
             bannerViewOptions.let {
                 if (it.inventoryCode != null) {
+                    Log.d(
+                        "Xandr.BannerView",
+                        "Xandr is initialized, setting the inventoryCode"
+                    )
                     this.setInventoryCodeAndMemberID(state.memberId, it.inventoryCode)
+                    configured = true
                 } else {
+                    Log.d(
+                        "Xandr.BannerView",
+                        "Xandr is initialized, setting the placementID"
+                    )
                     this.placementID = it.placementID
+                    configured = true
                 }
                 Log.d("Xandr.BannerView", "Initializing DONE")
             }
@@ -107,22 +119,37 @@ class BannerAd(
     }
 
     override fun loadAd(): Boolean {
-        
-        try {
-            Log.d("Xandr.BannerView", "loadAd; id=$widgetId")
-            return super.loadAd()
-        } catch (e: Exception) {
-            Log.e("Xandr.BannerView", "loadAd; id=$widgetId", e)
-            eventSink?.success(
-                mapOf(
-                    "event" to "onAdFailed",
-                    "widgetId" to widgetId.toLong(),
-                    "error" to e.toString()
-                )
-            )
+        if (!configured) {
+            Log.e("Xandr.BannerView", "Banner non configurato, skip loadAd()")
             return false
         }
-        
+
+        Log.e(
+            "Xandr.BannerView",
+            "placementId = ${this.placementID} -- adWidth = ${this.adWidth} -- adHeight = ${this.adHeight} -- inventoryCode = ${this.inventoryCode} -- memberId = ${this.memberID}"
+        )
+        if ((this.placementID != null || this.inventoryCode != null) &&
+            this.adWidth > 0 &&
+            this.adHeight > 0
+        ) {
+            try {
+                Log.d("Xandr.BannerView", "loadAd; id=$widgetId")
+                return super.loadAd()
+            } catch (e: Exception) {
+                Log.e("Xandr.BannerView", "loadAd; id=$widgetId", e)
+                eventSink?.success(
+                    mapOf(
+                        "event" to "onAdFailed",
+                        "widgetId" to widgetId.toLong(),
+                        "error" to e.toString()
+                    )
+                )
+                return false
+            }
+        } else {
+            Log.e("Xandr.BannerView", "Banner non configurato correttamente, skip loadAd()")
+            return false
+        }
     }
 
     override fun onActivityResumed(p0: Activity) {

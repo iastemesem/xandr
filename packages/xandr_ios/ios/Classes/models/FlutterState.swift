@@ -94,4 +94,8 @@ public class FlutterState {
         "Unable to find Banner for inventoryCode=\(String(describing: inventoryCode)), placementID=\(String(describing: placementID))"
       )
   }
+
+  func removeXandrBanner(id: Int64) {
+    flutterBannerAdviews[id] = nil
+  }
 }

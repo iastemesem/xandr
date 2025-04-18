@@ -31,6 +31,10 @@ class FlutterState(var applicationContext: Context, private var binaryMessenger:
     }
 
     fun getOrCreateBannerView(activity: Activity, id: Int, args: Any?): BannerViewContainer {
+        Log.d(
+            "Xandr.BannerViewFactory",
+            "Get or create BannerView with id=$id"
+        )
         if (!flutterBannerAdViews.containsKey(id)) {
             Log.d("Xandr.BannerViewFactory", "Create new FlutterBannerAdView for id=$id")
             flutterBannerAdViews[id] = BannerViewContainer(
@@ -38,7 +42,7 @@ class FlutterState(var applicationContext: Context, private var binaryMessenger:
                 this,
                 id,
                 (args as? Map<*, *>)?.toBannerAdViewOptions(),
-                this.binaryMessenger,
+                this.binaryMessenger
             )
         }
         Log.d("Xandr.BannerViewFactory", "Return existing FlutterBannerAdView for id=$id")
@@ -73,5 +77,15 @@ class FlutterState(var applicationContext: Context, private var binaryMessenger:
         throw RuntimeException(
             "Unable to find Banner for inventoryCode=$inventoryCode, placementID=$placementID"
         )
+    }
+
+    fun removeBannerView(id: Int) {
+        Log.d("Xandr.BannerViewFactory", "Remove XandrBanner for widgetId=$id")
+        if (flutterBannerAdViews.containsKey(id)) {
+            Log.d("Xandr.BannerViewFactory", "Remove XandrBanner for widgetId=$id")
+            flutterBannerAdViews.remove(id)
+        } else {
+            Log.e("Xandr.BannerViewFactory", "Banner for widgetId=$id not found!")
+        }
     }
 }

@@ -10,46 +10,45 @@ import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import io.flutter.plugin.common.MethodChannel
 
 class BannerViewContainer(
     activity: Activity,
     private var state: FlutterState,
     private var widgetId: Int,
     private val bannerViewOptions: BannerViewOptions?,
-    private var messenger: BinaryMessenger,
+    private var messenger: BinaryMessenger
 ) : PlatformView {
     val banner: BannerAd
     private var eventSink: EventChannel.EventSink? = null
     private val eventChannel = EventChannel(messenger, "xandr_ad_event_channel_$widgetId")
     private val methodChannel = MethodChannel(messenger, "xandr_ad_banner_channel_$widgetId")
 
-
     init {
         Log.d(
-            "Xandr.BannerView",
-            "Initializing $activity id=$widgetId " +
-                "xandr-initialized=${state.isInitialized} bannerViewOptions=$bannerViewOptions"
+            "Xandr.BannerViewContainer",
+            "Initializing id=$widgetId "
         )
 
-        this.banner = BannerAd(activity, state, widgetId, eventSink)
-
-        if (bannerViewOptions != null) {
-            this.banner.configure(bannerViewOptions)
+        this.banner = BannerAd(activity, state, widgetId, eventSink).apply {
+            if (bannerViewOptions != null) {
+                this.configure(bannerViewOptions)
+            }
         }
 
         eventChannel.setStreamHandler(object :
             EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventSink?) {
                 eventSink = events
-                if (banner.adListener == null)
+                if (banner.adListener == null) {
                     banner.adListener = XandrBannerAdListener(
                         widgetId.toLong(),
                         banner,
-                        eventSink,
+                        eventSink
                     )
+                }
             }
 
             override fun onCancel(arguments: Any?) {
@@ -60,45 +59,29 @@ class BannerViewContainer(
         methodChannel.setMethodCallHandler { call, result ->
             when (call.method) {
                 "loadAd" -> {
-                    Log.d("Xandr.BannerView", "loadAd called")
+                    Log.d("Xandr.BannerViewContainer", "loadAd called")
                     loadAd()
                     result.success(null)
                 }
                 "dispose" -> {
-                    Log.d("Xandr.BannerView", "dispose called")
+                    Log.d("Xandr.BannerViewContainer", "dispose called")
                     dispose()
                     result.success(null)
                 }
                 else -> {
-                    Log.d("Xandr.BannerView", "Unknown method called: ${call.method}")
+                    Log.d("Xandr.BannerViewContainer", "Unknown method called: ${call.method}")
                     result.notImplemented()
                 }
             }
         }
     }
 
-
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getView(): View {
         Log.d(
-            "Xandr.BannerView",
-            "Return view, xandr-initialized=${state.isInitialized.isCompleted}"
+            "Xandr.BannerViewContainer",
+            "getView, widgetId=$widgetId"
         )
-
-        if (bannerViewOptions?.multiAdRequestId == null) {
-            state.isInitialized.invokeOnCompletion {
-                Log.d(
-                    "Xandr.BannerView",
-                    "load add, xandr-initialized=${state.isInitialized.getCompleted()}"
-                )
-                bannerViewOptions?.loadWhenCreated?.let { loadWhenCreated ->
-                    if (loadWhenCreated) {
-                        loadAd()
-                    }
-                }
-            }
-        }
-
         return this.banner
     }
 
@@ -107,8 +90,10 @@ class BannerViewContainer(
     }
 
     override fun dispose() {
-        Log.d("Xandr.BannerView", "Disposing banner $widgetId")
+        Log.d("Xandr.BannerViewContainer", "Disposing banner $widgetId")
         eventSink = null
+        this.banner.adListener = null
         this.banner.destroy()
+        state.removeBannerView(widgetId)
     }
 }

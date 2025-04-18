@@ -12,7 +12,7 @@ public class XandrPlugin: UIViewController, FlutterPlugin,
 
   private var interstitialAd: InterstitialAd?
 
-    private var marRegistry: MultiAdRequestRegistry = MultiAdRequestRegistry.shared
+  private var marRegistry: MultiAdRequestRegistry = .shared
 
   private func parentController() -> UIViewController {
     var topController: UIViewController = UIApplication.shared.keyWindow!.rootViewController!
@@ -91,8 +91,6 @@ public class XandrPlugin: UIViewController, FlutterPlugin,
       .debug(
         message: "Trying to reset the XandrController instance"
       )
-    flutterState?.stopListening()
-    flutterState?.flushBannerAdViewList()
     flutterState?.startListening(api: self)
   }
 

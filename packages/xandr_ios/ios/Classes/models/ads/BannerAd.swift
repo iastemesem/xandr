@@ -25,7 +25,6 @@ func jsonDump(_ object: [String: Any?]) -> String? {
 }
 
 class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, FlutterStreamHandler {
-    
   public var banner: ANBannerAdView?
   public var state: FlutterState?
   public var viewId: Int64
@@ -37,33 +36,38 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
        viewIdentifier viewId: Int64,
        args: Any?,
        binaryMessenger messenger: FlutterBinaryMessenger?) {
-    
     self.viewId = viewId
     if messenger != nil {
-        eventChannel = FlutterEventChannel(name: "xandr_ad_event_channel_\(viewId)", binaryMessenger: messenger!)
-        methodChannel = FlutterMethodChannel(name: "xandr_ad_banner_channel_\(viewId)", binaryMessenger: messenger!)
+      eventChannel = FlutterEventChannel(
+        name: "xandr_ad_event_channel_\(viewId)",
+        binaryMessenger: messenger!
+      )
+      methodChannel = FlutterMethodChannel(
+        name: "xandr_ad_banner_channel_\(viewId)",
+        binaryMessenger: messenger!
+      )
     }
-      
+
     super.init()
     // Do any additional setup after loading the view.
     ANSDKSettings.sharedInstance().enableOMIDOptimization = true
     logger.debug(message: "init banner")
     self.state = state
-      
+
     eventChannel?.setStreamHandler(self)
     methodChannel?.setMethodCallHandler { [weak self] call, result in
-        if call.method == "loadAd" {
-          self?.loadAd()
-            result(nil)
-        }
-        
-        if call.method == "dispose" {
-            self?.dispose()
-            result(nil)
-        }
-        
-        result(FlutterMethodNotImplemented)
+      if call.method == "loadAd" {
+        self?.loadAd()
+        result(nil)
       }
+
+      if call.method == "dispose" {
+        self?.dispose()
+        result(nil)
+      }
+
+      result(FlutterMethodNotImplemented)
+    }
 
     guard let arguments = args as? [String: Any] else {
       return
@@ -144,51 +148,62 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
         banner?.placementId = placementID
       }
 
-      if multiAdRequestId != nil && banner != nil{
+      if multiAdRequestId != nil, banner != nil {
         let result = MultiAdRequestRegistry.shared.addAdUnit(multiAdRequestId!, ad: banner!)
         logger.debug(message: "add adUnit result: \(result)")
-      } else {
-        logger.debug(message: "init banner, load ad...")
-        banner?.loadAd()
       }
     }
   }
 
   func view() -> UIView {
-    guard let temp = banner else {
+    guard let banner else {
       logger.error(message: "banner is not initialized")
       return UIView()
     }
-    return temp
+    return banner
   }
 
   func loadAd() {
-    banner?.loadAd()
-  }
-    
-    func dispose() {
-        banner?.delegate = nil
-        banner?.removeFromSuperview()
-        banner = nil
+    guard let banner else {
+      return
     }
+
+    let hasPlacement = banner.placementId != nil
+    let hasInventory = banner.inventoryCode != nil
+    let validSize = banner.adSize.width > 0 && banner.adSize.height > 0
+
+    if hasPlacement || hasInventory, validSize {
+      banner.loadAd()
+    }
+  }
+
+  func dispose() {
+    guard banner != nil else {
+      return
+    }
+    state?.removeXandrBanner(id: viewId)
+    banner?.delegate = nil
+    banner?.removeFromSuperview()
+    banner = nil
+  }
 
   public func adDidReceiveAd(_ ad: Any) {
     if ad is ANBannerAdView {
       let a = ad as? ANBannerAdView
       if let info = a?.adResponseInfo {
-          eventSink?(
-            [
-                "event": "onAdLoaded",
-                "width": Int(a!.loadedAdSize.width),
-                "height": Int((a?.loadedAdSize.height)!),
-                "creativeId" : info.creativeId!,
-                "adType": info.adType.rawValue,
-                "tagId": "",
-                "auctionId": info.auctionId!,
-                "cpm": info.cpm!.doubleValue,
-                "memberId": info.memberId
-            ]
-          )
+        eventSink?(
+          [
+            "event": "onAdLoaded",
+            "width": Int(a!.loadedAdSize.width),
+            "height": Int((a?.loadedAdSize.height)!),
+            "creativeId": info.creativeId!,
+            "adType": info.adType.rawValue,
+            "tagId": "",
+            "auctionId": info.auctionId!,
+            "cpm": info.cpm!.doubleValue,
+            "memberId": info.memberId,
+          ]
+        )
       } else {
         logger
           .error(
@@ -209,17 +224,17 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
       let clickFallbackUrl = (customElements["link"] as? [String: Any])?["fallback_url"] as? String
 
       if clickUrl != nil || clickFallbackUrl != nil {
-          eventSink?(
-            [
-                "event" : "onNativeAdLoaded",
-                "viewId" : viewId,
-                "title" : title,
-                "description" : description,
-                "imageUrl" : imageUrl.absoluteString,
-                "clicKUrl" : clickUrl ?? clickFallbackUrl ?? "",
-                "customElements" : jsonDump(customElements) ?? "{}"
-            ]
-          )
+        eventSink?(
+          [
+            "event": "onNativeAdLoaded",
+            "viewId": viewId,
+            "title": title,
+            "description": description,
+            "imageUrl": imageUrl.absoluteString,
+            "clicKUrl": clickUrl ?? clickFallbackUrl ?? "",
+            "customElements": jsonDump(customElements) ?? "{}",
+          ]
+        )
       } else {
         logger
           .error(
@@ -236,40 +251,41 @@ class XandrBanner: NSObject, FlutterPlatformView, ANBannerAdViewDelegate, Flutte
 
   func ad(_ ad: Any, requestFailedWithError error: any Error) {
     logger.error(message: "BannerAd.adDidRecieveAd: an error \(error)")
-      eventSink?(
-        [
-            "event" : "onAdLoadedError",
-            "error" : error.localizedDescription
-        ]
-      )
+    eventSink?(
+      [
+        "event": "onAdLoadedError",
+        "error": error.localizedDescription,
+      ]
+    )
   }
 
   public func adWasClicked(_ ad: Any, withURL urlString: String) {
     if ad is ANBannerAdView {
       let _ = ad as? ANBannerAdView
-        eventSink?(
-            [
-                "event": "onAdClicked",
-                "url" : urlString
-            ]
-        )
+      eventSink?(
+        [
+          "event": "onAdClicked",
+          "url": urlString,
+        ]
+      )
     } else {
       logger.error(message: "BannerAd.adWasClicked: unknown \(ad)")
     }
   }
-    
-    /// Flutter stream handler methods, used from EventSink and EventChannel
-    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        eventSink = events
-        return nil
-    }
-    
-    func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        eventSink = nil
-        return nil
-    }
-    
-    func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        result("Hello World!")
-    }
+
+  /// Flutter stream handler methods, used from EventSink and EventChannel
+  func onListen(withArguments arguments: Any?,
+                eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    eventSink = events
+    return nil
+  }
+
+  func onCancel(withArguments arguments: Any?) -> FlutterError? {
+    eventSink = nil
+    return nil
+  }
+
+  func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    result("Hello World!")
+  }
 }

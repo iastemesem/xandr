@@ -2,9 +2,8 @@ import AppNexusSDK
 import Foundation
 
 public class MultiAdRequestRegistry {
-    
-    static let shared = MultiAdRequestRegistry()
-    
+  static let shared = MultiAdRequestRegistry()
+
   private var multiAdRequests: [String: ANMultiAdRequest] = [:]
 
   private func generateRandomStringId() -> String {

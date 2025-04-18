@@ -1,5 +1,7 @@
 package de.thekorn.xandr.listeners
 
+import android.os.Handler
+import android.os.Looper
 import com.appnexus.opensdk.AdListener
 import com.appnexus.opensdk.AdView
 import com.appnexus.opensdk.NativeAdResponse
@@ -11,13 +13,8 @@ import io.flutter.Log
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import org.json.JSONObject
-import android.os.Handler
-import android.os.Looper
 
-open class XandrAdListener(
-    private var widgetId: Int,
-    private var eventSink: EventSink?
-) :
+open class XandrAdListener(private var widgetId: Int, private var eventSink: EventSink?) :
     AdListener {
     override fun onAdLoaded(view: AdView?) {
         Log.d(
@@ -40,7 +37,7 @@ open class XandrAdListener(
                     "cpm" to adResponse?.cpm,
                     "buyMemberId" to adResponse?.buyMemberId?.toLong()
                 )
-            );
+            )
         } else {
             eventSink?.success(
                 mapOf(
@@ -65,7 +62,7 @@ open class XandrAdListener(
         ) {
             val nativeResponseJSON = (
                 adResponse.nativeElements
-                    [NativeAdResponse.NATIVE_ELEMENT_OBJECT]
+                [NativeAdResponse.NATIVE_ELEMENT_OBJECT]
                 )
                 as JSONObject
             clickUrl = JsonUtil.getJSONObject(nativeResponseJSON, "link").getString("url")
@@ -75,7 +72,7 @@ open class XandrAdListener(
             }
 
             customElements = nativeResponseJSON.toString()
-            
+
             Log.d(
                 "Xandr.BannerView",
                 ">>> Ad Loaded, NativeAdResponse customElements=$customElements"
@@ -181,7 +178,7 @@ open class XandrAdListener(
             ">>> Ad lazy loaded, AdView:p0=$adView"
         )
 
-        /// Need to be called on main thread
+        // / Need to be called on main thread
         Handler(Looper.getMainLooper()).post {
             eventSink?.success(
                 mapOf(
@@ -221,7 +218,7 @@ class XandrInterstitialAdListener(
 
     override fun onAdCollapsed(p0: AdView?) {
         super.onAdCollapsed(p0)
-        if(!interstitialAd.isClosed.isCompleted){
+        if (!interstitialAd.isClosed.isCompleted) {
             interstitialAd.isClosed.complete(true)
         }
         Log.d("Xandr.InterstitialView", "onAdCollapsed")

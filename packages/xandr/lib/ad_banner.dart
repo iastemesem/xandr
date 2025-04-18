@@ -476,6 +476,10 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
           defaultTargetPlatform != TargetPlatform.iOS,
       'The AdBanner widget is not supported on $defaultTargetPlatform',
     );
+    debugPrint(
+      'Xandr >>> AdBanner build widgetId: ${widget.inventoryCode} ---'
+      ' ${widget.creationParams['multiAdRequestId']}',
+    );
     debugPrint('>>>> _HostAdBannerView: build widgetId: ');
     if (widget.nativeAdWidget != null) {
       return widget.nativeAdWidget!;
@@ -513,6 +517,9 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
       widget.widgetId.complete(id);
     }
     debugPrint('Created banner view: $id');
+    debugPrint(
+      'Xandr >>> AdBanner onPlatformViewCreated ${widget.inventoryCode}',
+    );
 
     _initEventsChannel(id);
     _initMethodsChannel(id);
@@ -521,7 +528,10 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
   void _initEventsChannel(int id) {
     _eventChannel = EventChannel('xandr_ad_event_channel_$id');
     _eventSubscription = _eventChannel.receiveBroadcastStream().listen((event) {
-      debugPrint('Xandr >>> ADEvent from native >>> $event');
+      debugPrint(
+        'Xandr >>> ADEvent from native ${widget.inventoryCode}'
+        '>>> $event',
+      );
 
       final xandrAdEvent =
           XandrAdEvent.fromJson(event as Map<dynamic, dynamic>);
@@ -567,6 +577,10 @@ class _HostAdBannerViewState extends State<_HostAdBannerView> {
 
   void _initMethodsChannel(int id) {
     _methodChannel = MethodChannel('xandr_ad_banner_channel_$id');
+    final multiAdRequestId = widget.creationParams['multiAdRequestId'];
+    if (multiAdRequestId == null) {
+      _methodChannel?.invokeMethod('loadAd');
+    }
   }
 }
 
