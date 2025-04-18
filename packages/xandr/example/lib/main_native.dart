@@ -7,7 +7,7 @@ import 'package:xandr/xandr.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await XandrSDKManager.initialize(9517, testMode: true);
+  await XandrSDKManager.initialize(9517, testMode: true); 
   runApp(const MyApp());
 }
 

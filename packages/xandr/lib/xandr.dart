@@ -20,11 +20,19 @@ class XandrSDKManager {
     int? publisherId,
     bool testMode = false,
   }) async {
-    return _initialized = await _platform.init(
-      memberId,
-      publisherId: publisherId,
-      testMode: testMode,
-    );
+    try {
+      _initialized = await _platform.init(
+        memberId,
+        publisherId: publisherId,
+        testMode: testMode,
+      );
+      debugPrint('XandrSDKManager.initialize >> : $_initialized');
+    } catch (e) {
+      debugPrint('XandrSDKManager.initialize Error >> : $e');
+      _initialized = false;
+    }
+
+    return _initialized;
   }
 
   /// A method that checks if the XandrAD SDK is initialized.

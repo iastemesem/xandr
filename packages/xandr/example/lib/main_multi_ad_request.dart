@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xandr/ad_banner.dart';
 import 'package:xandr/ad_size.dart';
+import 'package:xandr/multiadrequest_builder.dart';
 import 'package:xandr/xandr.dart';
 
 void main() async {
@@ -52,7 +53,7 @@ class _XandrExampleState extends State<XandrExample> {
   void initState() {
     super.initState();
 
-    _multiAdRequestController = MultiAdRequestController()..init();
+    _multiAdRequestController = MultiAdRequestController();
     _scrollController.addListener(() {
       _checkIfAdIsInViewport.add(_scrollController.position);
     });
@@ -65,101 +66,110 @@ class _XandrExampleState extends State<XandrExample> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('xandr sample - multi ad request'),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Column(
-            children: [
-              TextButton(
-                onPressed: () {
-                  _multiAdRequestController.loadAds();
-                },
-                child: const Text('load ads'),
-              ),
-              const Text('typesetting industry. Lorem has been the boo '
-                  'standard dummy text ever sin 1500s, when an aha '
-                  'Lorem Ipsum is simply dummy f the printing and '
-                  'printer took a galley of boo it to m'),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'fit to container:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+      body: MultiAdRequestBuilder(
+        controller: _multiAdRequestController,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return SingleChildScrollView(
+            controller: _scrollController,
+            child: Column(
+              children: [
+                TextButton(
+                  onPressed: () {
+                    _multiAdRequestController.loadAds();
+                  },
+                  child: const Text('load ads'),
+                ),
+                const Text('typesetting industry. Lorem has been the boo '
+                    'standard dummy text ever sin 1500s, when an aha '
+                    'Lorem Ipsum is simply dummy f the printing and '
+                    'printer took a galley of boo it to m'),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'fit to container:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              AdBanner(
-                controller: _multiAdRequestController,
-                //placementID: '17058950',
-                inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
-                adSizes: const [
-                  AdSize(728, 90),
-                ],
-                //[AdSize(300, 250)],
-                customKeywords: useDemoAds,
-                resizeAdToFitContainer: true,
-              ),
-              const Text('Lorem Ipsum is simply text of the printing and '
-                  'typesetting industry. Ipsum has been the boo '
-                  'standard dummy text as the 1500s, when an aha '
-                  'printer took a galley e and scrambled it to v'),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'fit to container:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                AdBanner(
+                  controller: _multiAdRequestController,
+                  //placementID: '17058950',
+                  inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
+                  adSizes: const [
+                    AdSize(728, 90),
+                  ],
+                  //[AdSize(300, 250)],
+                  customKeywords: useDemoAds,
+                  resizeAdToFitContainer: true,
+                ),
+                const Text('Lorem Ipsum is simply text of the printing and '
+                    'typesetting industry. Ipsum has been the boo '
+                    'standard dummy text as the 1500s, when an aha '
+                    'printer took a galley e and scrambled it to v'),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'fit to container:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              AdBanner(
-                controller: _multiAdRequestController,
-                //placementID: '17058950',
-                inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
-                adSizes: const [
-                  AdSize(728, 90),
-                ],
-                //[AdSize(300, 250)],
-                customKeywords: useDemoAds,
-                resizeAdToFitContainer: true,
-              ),
-              const Text('Lorem Ipsum is simp du text of the printing and '
-                  'typesetting industry. Lo Ipsum has been the boo '
-                  'standard dummy text as the 1500s, when an aha '
-                  'printer took a galley as and scrambled it to g'),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Align(
-                  alignment: Alignment.topLeft,
-                  child: Text(
-                    'fit to container:',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                AdBanner(
+                  controller: _multiAdRequestController,
+                  //placementID: '17058950',
+                  inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
+                  adSizes: const [
+                    AdSize(728, 90),
+                  ],
+                  //[AdSize(300, 250)],
+                  customKeywords: useDemoAds,
+                  resizeAdToFitContainer: true,
+                ),
+                const Text('Lorem Ipsum is simp du text of the printing and '
+                    'typesetting industry. Lo Ipsum has been the boo '
+                    'standard dummy text as the 1500s, when an aha '
+                    'printer took a galley as and scrambled it to g'),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      'fit to container:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              AdBanner(
-                controller: _multiAdRequestController,
-                //placementID: '17058950',
-                inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
-                adSizes: const [
-                  AdSize(728, 90),
-                ],
-                //[AdSize(300, 250)],
-                customKeywords: useDemoAds,
-                resizeAdToFitContainer: true,
-              ),
-            ],
-          ),
-        ),
+                AdBanner(
+                  controller: _multiAdRequestController,
+                  //placementID: '17058950',
+                  inventoryCode: 'bunte_webdesktop_home_homepage_hor_1',
+                  adSizes: const [
+                    AdSize(728, 90),
+                  ],
+                  //[AdSize(300, 250)],
+                  customKeywords: useDemoAds,
+                  resizeAdToFitContainer: true,
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
